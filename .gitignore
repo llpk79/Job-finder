@@ -1,7 +1,7 @@
-.idea
-.txt
-.ipynb_checkpoint
-data/
+*.idea
+*.txt
+*.ipynb_checkpoint
+*.lock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
