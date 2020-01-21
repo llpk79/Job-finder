@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+beautifulsoup4 = "==4.8.2"
+pandas = "==0.25.1"
+numpy = "==1.18.1"
+scikit-learn = "==0.22.1"
+matplotlib = "==3.1.2"
+spacy = "==2.2.3"
+ipykernel = "*"
+seaborn = "*"
+urllib3 = "*"
+aiosmtpd = "*"
+
+[requires]
+python_version = "3.7"
