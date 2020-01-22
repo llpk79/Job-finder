@@ -89,7 +89,8 @@ class IndeedScraper(object):
         for base_url in self.get_next_pages():
             request = self.http.request('GET',
                                         base_url)
-            base_soup = BeautifulSoup(request.data)
+            base_soup = BeautifulSoup(request.data, 
+                                      features="html.parser")
 
             for url in self.find_long_urls(base_soup):
                 the_url = "http://www.indeed.com/" + url
