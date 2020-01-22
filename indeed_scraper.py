@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import smtplib
 import spacy
@@ -6,6 +7,12 @@ import urllib3
 from bs4 import BeautifulSoup
 from email.message import EmailMessage
 from sklearn.neighbors import NearestNeighbors
+from dotenv import load_dotenv
+
+env_path = '/usr/src/.env'
+
+load_dotenv(dotenv_path=env_path, verbose=True)
+PASSWORD = os.getenv('PASSWORD')
 
 
 class IndeedScraper(object):
@@ -31,12 +38,9 @@ class IndeedScraper(object):
 
     def __init__(self, 
                  pages: int = 10, 
-                 num_jobs: int = 10,
-                 email: str = None,
-                 resume_path: str = None,
-                 city: str = None,
-                 state: str = None,
-                 terms: str = None) -> None:
+                 num_jobs: int = 10) -> None:
+        self.pages = pages  # Number of indeed pages to search.
+        self.num_jobs = num_jobs  # Number of job listings to receive in email.
         self.email = self.user_input('Enter email:\n')
         self.city = self.user_input('Enter city:\n').strip().title()
         self.state = self.user_input('Enter state:\n').strip().upper()
@@ -45,8 +49,6 @@ class IndeedScraper(object):
         self.resume = self.load_resume(self.resume_path)
         self.url = self.build_url()
         self.http = urllib3.PoolManager()
-        self.pages = pages
-        self.num_jobs = num_jobs
         self.jobs = set()
         self.base_email = 'pkutrich@gmail.com'
         self.vectors = None
@@ -63,15 +65,17 @@ class IndeedScraper(object):
         self.get_best_jobs()
         self.email_jobs()
     
-    def build_url(self) -> None:
+    def build_url(self) -> str:
         url = f"http://www.indeed.com/jobs?q={'%20'.join(self.terms.split())}&l={'%20'.join(self.city.split())},%20{self.state}"
         print('Search URL: ', url)
         return url
-    
-    def user_input(self, prompt: str) -> str:
+
+    @staticmethod
+    def user_input(prompt: str) -> str:
         return input(prompt)
 
-    def find_long_urls(self, soup: str) -> list:
+    @staticmethod
+    def find_long_urls(soup) -> list:
         urls = []
         for div in soup.find_all(name='div', 
                                  attrs={'class': 'row'}):
@@ -80,7 +84,7 @@ class IndeedScraper(object):
                 urls.append(a['href'])
         return urls
 
-    def get_next_pages(self) -> None:
+    def get_next_pages(self) -> list:
         return [self.url] + [self.url + f'&start={x}0' for x in range(1, self.pages)]
 
     def get_descriptions(self) -> list:
@@ -109,14 +113,15 @@ class IndeedScraper(object):
                     descriptions.append((the_url, description.text))
         print(f"Found {len(descriptions)} jobs.")
         return descriptions
-    
-    def load_resume(self, path) -> str:
+
+    @staticmethod
+    def load_resume(path) -> str:
         print('Loading resume...')
         with open(path, 'r') as f:
             resume = f.read().strip('\n')
         return resume
     
-    def get_description_vectors(self):
+    def get_description_vectors(self) -> np.array:
         print('Getting description vectors...')
         return np.array([self.nlp(doc).vector for _, doc in self.descriptions])
         
@@ -138,7 +143,7 @@ class IndeedScraper(object):
         msg.set_content(f"{div}".join([job.strip() + '\n' for job in self.jobs]))
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login('pkutrich', 'ozgndzvnrgihyawj')
+        server.login('pkutrich', PASSWORD)
 #         server.set_debuglevel(1)
         server.send_message(msg)
         server.quit()
@@ -147,4 +152,3 @@ class IndeedScraper(object):
 
 if __name__ == "__main__":
     scraper = IndeedScraper(10, 10)
-    
