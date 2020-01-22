@@ -10,8 +10,12 @@ beautifulsoup4 = "==4.8.2"
 numpy = "==1.18.1"
 scikit-learn = "==0.22.1"
 spacy = "==2.2.3"
-urllib3 = "*"
-aiosmtpd = "*"
+urllib3 = "==1.25.8"
+aiosmtpd = "==1.2"
 en-core-web-lg = {file = "https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-2.2.5/en_core_web_lg-2.2.5.tar.gz"}
+soupsieve = "==1.9.5"
+python-dotenv = "==0.10.5"
+Cython = ">=0.29.14"
+
 [requires]
 python_version = "3.7"
