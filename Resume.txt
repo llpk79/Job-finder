@@ -1,0 +1,59 @@
+Paul Kutrich
+Data Scientist seeking meaningful role utilizing the critical thinking and communication skills developed as a registered nurse while working with a diverse team of professionals in high stress environments.
+	
+
+Seattle, WA
+(509) 953 4595
+pkutrich@gmail.com
+linkedin.com/in/paul-kutrich
+llpk79.github.io
+	EDUCATION
+Lambda School Data Science Fellowship 
+April 2019 – Current
+Data science and machine learning with Python
+Focus on, statistical analysis, visualization and storytelling, data engineering, OOP, model deployment, and collaboration
+Washington State University 
+2002 – 2006
+Bachelor of Science in Nursing
+Tutor and TA for many subjects such as anatomy & physiology organic chemistry, and statistics
+PROJECTS
+Diabetic screening recommendation tool, project link
+Turn business questions into data science products that deliver actionable recommendations
+Dash app, hosted on Heroku for exploring live predictions with an Xgboost Random Forest Classifier
+Take a technical dive into making decisions by manipulating probability thresholds with an interactive Plotly chart
+Investigation of King County, WA food deserts, project link
+Clean, combine, transform, and analyse data from multiple sources with Pandas and Numpy
+Create informative, intuitive visualizations with Maplotlib to tell a story that is understandable by non-technical stakeholders
+Examine whether a food desert designation correlates with lower fruit and vegetable consumption
+Multi-label classification with extra trees classifier, project link
+Systematic, repeatable model development
+Challenging multi-label classification where the number of features equals the number of binary targets
+Use Pandas, Numpy and Sklearn to formulate a machine learning problem from a table game
+Engineering Skills
+Python
+Bash / Zsh
+Object Oriented Programing
+Libraries & Tools
+Pandas
+Numpy
+Matplotlib
+Tensorflow
+Keras
+Scikit Learn
+Scipy
+Plotly
+Flask
+Dash
+Git
+
+
+EXPERIENCE
+Lambda School 
+Data Science Team Lead
+Sept. 2019 - Current
+
+
+Conduct student code reviews to ensure proper understanding and application of concepts and methods.  
+
+
+Lead 1:1 and team standup meetings to address blockers and facilitate collaboration.
