@@ -1,5 +1,4 @@
 *.idea
-*.txt
 *.ipynb_checkpoint
 *.lock
 
