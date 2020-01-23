@@ -40,7 +40,7 @@ class IndeedScraper(object):
                  pages: int = 10, 
                  num_jobs: int = 10) -> None:
         self.pages = pages  # Number of indeed pages to search.
-        self.num_jobs = num_jobs  # Number of job listings to receive in email.
+        self.num_jobs = num_jobs * 2  # Number of job listings to receive in email.
         self.email = self.user_input('Enter email:\n')
         self.city = self.user_input('Enter city:\n').strip().title()
         self.state = self.user_input('Enter state:\n').strip().upper()
@@ -49,7 +49,7 @@ class IndeedScraper(object):
         self.resume = self.load_resume(self.resume_path)
         self.url = self.build_url()
         self.http = urllib3.PoolManager()
-        self.jobs = set()
+        self.jobs = []
         self.base_email = 'pkutrich@gmail.com'
         self.vectors = None
         print('Loading NLP packages...')
@@ -116,7 +116,7 @@ class IndeedScraper(object):
 
     @staticmethod
     def load_resume(path) -> str:
-        print('Loading resume...')
+        print('\nLoading resume...')
         with open(path, 'r') as f:
             resume = f.read().strip('\n')
         return resume
@@ -126,21 +126,32 @@ class IndeedScraper(object):
         return np.array([self.nlp(doc).vector for _, doc in self.descriptions])
         
     def get_best_jobs(self) -> None:
-        print(f'Finding best {self.num_jobs} job matches...')
+        print(f'Finding best {self.num_jobs // 2} job matches...')
         self.nn.fit(self.vectors)
-        potential_neighbors = self.nn.kneighbors(np.array([self.nlp(self.resume).vector]))
+        potential_neighbors = self.nn.kneighbors(np.array([self.nlp(self.resume).vector]), self.num_jobs)
         neighbors = [y for x, y in zip(potential_neighbors[0][0], potential_neighbors[1][0]) if 0.05 < x]
         for neighbor in neighbors:
-            self.jobs.add(self.descriptions[neighbor][1])
-    
+            self.jobs.append(self.descriptions[neighbor])
+        self.remove_duplicates()
+
+    def remove_duplicates(self) -> None:
+        final_jobs = [self.jobs[0]]
+        for job in self.jobs[1:]:
+            doc1 = self.nlp(job[1])
+            if all([doc1.similarity(self.nlp(doc[1])) < .99 for doc in final_jobs]):
+                final_jobs.append(job)
+                if len(final_jobs) == self.num_jobs // 2:
+                    break
+        self.jobs = final_jobs.copy()
+
     def email_jobs(self) -> None:
         print('Emailing jobs...')
         msg = EmailMessage()
         msg['subject'] = "New jobs!!"
         msg['from'] = self.base_email
         msg['to'] = self.email
-        div = "\n" + "-" * 79 + "\n"
-        msg.set_content(f"{div}".join([job.strip() + '\n' for job in self.jobs]))
+        div = "\n" + "*-" * 40 + "\n"
+        msg.set_content(f"{div}".join([job[0].strip() + f'{div}' + job[1] + f'{div}' for job in self.jobs]))
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login('pkutrich', PASSWORD)
