@@ -12,7 +12,7 @@ Docker container with CLI to scrape Indeed.com, vectorize resume and job descrip
     - `$ cd` to directory containing your `<your resume>.txt`
         - `$ docker ps`
         - copy `NAMES` of the container running the `IMAGE` `pkutrich/job-finder`
-        - `$ docker cp <your resume>.txt <name of running container>:/usr/src/<your resume>.txt`
+        - `$ docker cp <your resume>.txt <name of running container>:<your resume>.txt`
 - Return to first terminal and follow prompts.
 - Program will print status updates.
 - Check your email!
