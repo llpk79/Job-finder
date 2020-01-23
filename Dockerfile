@@ -1,6 +1,8 @@
 # Base image.
 FROM ubuntu
 
+# Get updates and upgrades for ubuntu.
+# Install python.
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt install python3-pip -y \
