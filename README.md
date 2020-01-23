@@ -3,7 +3,7 @@ Write a job description for your ideal job, (or use your resume) and use the pow
 
 Best results are expected by providing a job description writen in the style of a job description. The NLP algorithm is looking at document similarity as a whole, not simply searching for keywords or phrases.
 
-Docker container runs on any machine. (What is Docker?)[https://docs.docker.com/engine/docker-overview/]
+Docker container runs on any machine. [What is Docker?](https://docs.docker.com/engine/docker-overview/)
 
 After starting the program the command line prompts you to enter how many pages to scrape, how many jobs to return, where to search, what search phrase to use, and the name of your text file.
 
