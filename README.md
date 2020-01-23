@@ -2,9 +2,9 @@
 Docker container with CLI to scrape Indeed.com, vectorize resume and job descriptions using Spacy, and find jobs relevant to resume using KNN. Email results.
 
 ## Usage
-- Place resume in `.txt` format in this directory. 
+- Save resume in `.txt` format. 
 - Remove any non-ascii characters and bullets from `<your resume>.txt` file.
-- Consider removing your personal info from `<your resume>.txt` like name and location info.
+- Consider removing your personal info from `<your resume>.txt` like name and location info for more generalizable results.
 - Start Docker app in terminal.
     - `$ docker run -it pkutrich/job-finder`
 - *Don't start entering info just yet!*
