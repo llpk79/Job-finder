@@ -6,8 +6,8 @@ Docker container with CLI to scrape Indeed.com, vectorize resume and job descrip
 - Remove any non-ascii characters and bullets from `<your resume>.txt` file.
 - Consider removing your personal info from `<your resume>.txt` like name and location info for more generalizable results.
 - Start Docker app in terminal.
-    - `$ docker run -it pkutrich/job-finder`
-- *Don't start entering info just yet!*
+    - `$ docker run -it --rm pkutrich/job-finder`
+- **Don't start entering info just yet!**
 - In a separate terminal:
     - `$ cd` to directory containing your `<your resume>.txt`
         - `$ docker ps`
