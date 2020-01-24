@@ -21,10 +21,10 @@ Python program uses:
     - `$ docker run -it --rm pkutrich/job-finder`
 - **Don't start entering info just yet!** Job-finder needs a copy of your document
 - In a separate terminal
-    - `$ cd path/to/<your_file>.txt` or, provide `/path/to/<your_file>.txt` at prompt
-        - `$ docker ps`
-        - copy `NAMES` of the container running the `IMAGE` `pkutrich/job-finder`
-        - `$ docker cp <your_file>.txt <name of running container>:<your_file>.txt`
+    - `$ cd path/to/<your_file>.txt` or, provide `/path/to/<your_file>.txt` in step c
+        1. `$ docker ps`
+        2. copy `NAMES` of the container running the `IMAGE` `pkutrich/job-finder`
+        3. `$ docker cp <your_file>.txt <name of running container>:<your_file>.txt`
 - Return to first terminal and follow prompts
 - Program will print status updates
 - Check your email!
