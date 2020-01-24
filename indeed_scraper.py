@@ -18,7 +18,6 @@ load_dotenv()
 
 PASSWORD = os.getenv('PASSWORD')
 USER_NAME = os.getenv('USER_NAME')
-print('usr ', USER_NAME)
 
 
 class IndeedScraper(object):
@@ -55,7 +54,7 @@ class IndeedScraper(object):
         self.base_email = 'pkutrich@gmail.com'
         self.vectors = None
         print('Loading NLP packages...')
-        self.nlp = spacy.load("en_core_web_lg")
+        self.nlp = spacy.load('en_core_web_lg')
         self.nn = NearestNeighbors(n_neighbors=self.num_jobs,
                                    algorithm='ball_tree')
         self.descriptions = None
@@ -70,7 +69,7 @@ class IndeedScraper(object):
     
     def build_url(self) -> str:
         """Builds search url from user input."""
-        url = f"http://www.indeed.com/jobs?q=" \
+        url = f'http://www.indeed.com/jobs?q=' \
               f"{'%20'.join(self.terms.split())}&l={'%20'.join(self.city.split())},%20{self.state}"
         print('Search URL: ', url)
         return url
@@ -83,7 +82,15 @@ class IndeedScraper(object):
     @staticmethod
     def num_user_input(prompt: str) -> int:
         """Prompts user with <prompt> and returns integer input."""
-        return int(input(prompt))
+        while True:
+            try:
+                num = int(input(prompt))
+                break
+            except ValueError:
+                print('Please enter a number.')
+                continue
+
+        return num
 
     @staticmethod
     def find_long_descriptions(soup) -> list:
@@ -108,7 +115,7 @@ class IndeedScraper(object):
         for base_url in self.get_next_pages():
             request = self.http.request('GET',
                                         base_url)
-            base_soup = BeautifulSoup(request.data, "html.parser")
+            base_soup = BeautifulSoup(request.data, 'html.parser')
             # Follow links to each job description on the page.
             for url in self.find_long_descriptions(base_soup):
                 the_url = "http://www.indeed.com/" + url
@@ -118,12 +125,14 @@ class IndeedScraper(object):
                                         retries=urllib3.Retry(connect=500, 
                                                               read=2,
                                                               redirect=50))
-                # Parse out text from each description page and put it in the list.
+                # Parse out title and text from each description page and put it in the list.
                 soup = BeautifulSoup(req.data, 'html.parser')
+                title = soup.find(name='h3',
+                                  attrs={'class': 'icl-u-xs-mb--xs icl-u-xs-mt--none jobsearch-JobInfoHeader-title'})
                 description = soup.find(name='div', 
                                         attrs={'id': 'jobDescriptionText'})
                 if description:
-                    descriptions.append((the_url, description.text))
+                    descriptions.append((the_url, description.text, title.text))
         print(f"Found {len(descriptions)} jobs.")
         return descriptions
 
@@ -138,7 +147,7 @@ class IndeedScraper(object):
     def get_description_vectors(self) -> list:
         """Get Spacy vectors for each long form job description."""
         print('Getting description vectors...')
-        return [self.nlp(doc).vector for _, doc in self.descriptions]
+        return [self.nlp(doc).vector for _, doc, _ in self.descriptions]
         
     def get_best_jobs(self) -> None:
         """Vectorize resume and fit a nearest neighbors classifier to find desired number of jobs."""
@@ -170,18 +179,19 @@ class IndeedScraper(object):
         server = self.initialize_server()
         self.send_and_deactivate(server, msg)
 
-    def build_message(self):
+    def build_message(self) -> EmailMessage:
         """Create EmailMessage instance."""
         msg = EmailMessage()
-        msg['subject'] = "New jobs!!"
+        msg['subject'] = 'New jobs!!'
         msg['from'] = self.base_email
         msg['to'] = self.email
-        div = "\n" + "*-" * 40 + "\n"
-        msg.set_content(f"{div}".join([job[0].strip() + f'{div}' + job[1] + f'{div}' for job in self.jobs]))
+        div = '\n' + '*-' * 20 + '\n'
+        msg.set_content(f'{div}'.join([job[2] + '\n\n' + job[0].strip() + '\n\n' + job[1] + '\n\n'
+                                       for job in self.jobs]))  # job == (url, description, title)
         return msg
 
     @staticmethod
-    def initialize_server():
+    def initialize_server() -> smtplib.SMTP:
         """Start a Gmail smtp server."""
         server = smtplib.SMTP('smtp.gmail.com', 587)
         # server.set_debuglevel(1)
@@ -190,7 +200,7 @@ class IndeedScraper(object):
         return server
 
     @staticmethod
-    def send_and_deactivate(server, msg) -> None:
+    def send_and_deactivate(server: smtplib.SMTP, msg: EmailMessage) -> None:
         """Send <msg> and deactivate <server>. Print confirmation message."""
         server.send_message(msg)
         server.quit()
