@@ -16,6 +16,8 @@ en-core-web-lg = {file = "https://github.com/explosion/spacy-models/releases/dow
 soupsieve = "==1.9.5"
 python-dotenv = "==0.10.5"
 Cython = ">=0.29.14"
+pyshorteners = "*"
+tqdm = "*"
 
 [requires]
 python_version = "3.7"
