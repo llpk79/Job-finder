@@ -9,28 +9,34 @@ from sklearn.neighbors import NearestNeighbors
 from dotenv import load_dotenv
 
 # Load environment variables.
-env_path = '/usr/src/.env'
-load_dotenv(dotenv_path=env_path, verbose=True)
+# Docker
+# env_path = '/usr/src/.env'
+# load_dotenv(dotenv_path=env_path, verbose=True)
+
+# Local
+load_dotenv()
+
 PASSWORD = os.getenv('PASSWORD')
 USER_NAME = os.getenv('USER_NAME')
+print('usr ', USER_NAME)
 
 
 class IndeedScraper(object):
-    """Get Indeed.com job listings that match closest with your resume.
+    """Get Indeed.com job listings that match closest with your provided document.
     
     Use BeautifulSoup to scrape Indeed.com for job listings and descriptions.
-    Use the Spacy NLP library to vectorize each listing and your resume.
-    Then, use KNN to find listings most relevant to your resume.
+    Use the Spacy NLP library to vectorize each listing and your provided document.
+    Then, use KNN to find listings most relevant to your provided document.
     Get the results right in your email inbox!
 
     User supplies:
     - The number of indeed.com pages to search.
     - The number of search results to return.
     - The email address to send results to.
-    - The file name of your resume (in the same directory as this file).
+    - The file name of your provided document.
     - The city you want to work in.
     - The state that city is in.
-    - A search term for the kind of job you're looking for (i.e. Apprentice Plumber).
+    - A search term for the kind of job you're looking for (i.e. Data Scientist).
 
     """
 
@@ -138,7 +144,7 @@ class IndeedScraper(object):
         """Vectorize resume and fit a nearest neighbors classifier to find desired number of jobs."""
         print(f'Finding best {self.num_jobs // 2} job matches...')
         self.nn.fit(self.vectors)
-        neighbors = self.nn.kneighbors([self.nlp(self.resume).vector], self.num_jobs, return_distance=False)[0][0]
+        neighbors = list(self.nn.kneighbors([self.nlp(self.resume).vector], self.num_jobs, return_distance=False)[0])
         for neighbor in neighbors:
             self.jobs.append(self.descriptions[neighbor])
         self.remove_duplicates()
