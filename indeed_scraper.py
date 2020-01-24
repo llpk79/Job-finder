@@ -4,20 +4,24 @@ import spacy
 import urllib3
 
 from bs4 import BeautifulSoup
-from email.message import EmailMessage
-from sklearn.neighbors import NearestNeighbors
 from dotenv import load_dotenv
+from email.message import EmailMessage
+from pyshorteners import Shortener
+from sklearn.neighbors import NearestNeighbors
+from tqdm import tqdm
 
 # Load environment variables.
 # Docker
-# env_path = '/usr/src/.env'
-# load_dotenv(dotenv_path=env_path, verbose=True)
+env_path = '/usr/src/.env'
+load_dotenv(dotenv_path=env_path, verbose=True)
 
 # Local
-load_dotenv()
+# load_dotenv()
 
 PASSWORD = os.getenv('PASSWORD')
 USER_NAME = os.getenv('USER_NAME')
+EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
+API_KEY = os.getenv('API_KEY')
 
 
 class IndeedScraper(object):
@@ -42,21 +46,23 @@ class IndeedScraper(object):
     def __init__(self) -> None:
         self.pages = self.num_user_input('Enter number of pages to search:\n')  # Number of indeed pages to search.
         self.num_jobs = self.num_user_input('Enter max job listings to receive:\n') * 2  # Buffer for duplicates.
+        self.resume_path = self.user_input('Enter document file name:\n')
+        self.resume = self.load_resume(self.resume_path)
         self.email = self.user_input('Enter email:\n')
+        print('\nYou may leave any of the following prompts blank to broaden your search.\n')
         self.city = self.user_input('Enter city:\n').strip().title()
         self.state = self.user_input('Enter state:\n').strip().upper()
         self.terms = self.user_input('Enter job title:\n').strip().lower()
-        self.resume_path = self.user_input('Enter resume file name:\n')
-        self.resume = self.load_resume(self.resume_path)
         self.url = self.build_url()
         self.http = urllib3.PoolManager()
-        self.jobs = []
-        self.base_email = 'pkutrich@gmail.com'
-        self.vectors = None
         print('Loading NLP packages...')
         self.nlp = spacy.load('en_core_web_lg')
         self.nn = NearestNeighbors(n_neighbors=self.num_jobs,
                                    algorithm='ball_tree')
+        self.shortener = Shortener('Bitly', bitly_token=API_KEY)
+        self.jobs = []
+        self.base_email = EMAIL_ADDRESS
+        self.vectors = None
         self.descriptions = None
         self.main()
     
@@ -66,7 +72,15 @@ class IndeedScraper(object):
         self.vectors = self.get_description_vectors()
         self.get_best_jobs()
         self.email_jobs()
-    
+
+    @staticmethod
+    def load_resume(path) -> str:
+        """Load resume text from disc."""
+        print('\nLoading document...')
+        with open(path, 'r') as f:
+            resume = f.read().strip('\n')
+        return resume
+
     def build_url(self) -> str:
         """Builds search url from user input."""
         url = f'http://www.indeed.com/jobs?q=' \
@@ -112,7 +126,7 @@ class IndeedScraper(object):
         print('Getting job descriptions...')
         descriptions = []
         # Get and parse each top level page.
-        for base_url in self.get_next_pages():
+        for base_url in tqdm(self.get_next_pages()):
             request = self.http.request('GET',
                                         base_url)
             base_soup = BeautifulSoup(request.data, 'html.parser')
@@ -125,7 +139,7 @@ class IndeedScraper(object):
                                         retries=urllib3.Retry(connect=500, 
                                                               read=2,
                                                               redirect=50))
-                # Parse out title and text from each description page and put it in the list.
+                # Parse out title and text from each description page and put it in the descriptions list.
                 soup = BeautifulSoup(req.data, 'html.parser')
                 title = soup.find(name='h3',
                                   attrs={'class': 'icl-u-xs-mb--xs icl-u-xs-mt--none jobsearch-JobInfoHeader-title'})
@@ -136,18 +150,10 @@ class IndeedScraper(object):
         print(f"Found {len(descriptions)} jobs.")
         return descriptions
 
-    @staticmethod
-    def load_resume(path) -> str:
-        """Load resume text from disc."""
-        print('\nLoading resume...')
-        with open(path, 'r') as f:
-            resume = f.read().strip('\n')
-        return resume
-    
     def get_description_vectors(self) -> list:
         """Get Spacy vectors for each long form job description."""
         print('Getting description vectors...')
-        return [self.nlp(doc).vector for _, doc, _ in self.descriptions]
+        return [self.nlp(doc).vector for _, doc, _ in tqdm(self.descriptions)]
         
     def get_best_jobs(self) -> None:
         """Vectorize resume and fit a nearest neighbors classifier to find desired number of jobs."""
@@ -161,7 +167,7 @@ class IndeedScraper(object):
     def remove_duplicates(self) -> None:
         """Use Spacy's similarity function to weed out duplicate job descriptions."""
         final_jobs = [self.jobs[0]]
-        for job in self.jobs[1:]:
+        for job in tqdm(self.jobs[1:]):
             doc1 = self.nlp(job[1])
             # Compare the similarity of <job> to each doc in <final_jobs>.
             # If <job> matches any of <final_jobs> reject <job>.
@@ -186,7 +192,7 @@ class IndeedScraper(object):
         msg['from'] = self.base_email
         msg['to'] = self.email
         div = '\n' + '*-' * 20 + '\n'
-        msg.set_content(f'{div}'.join([job[2] + '\n\n' + job[0].strip() + '\n\n' + job[1] + '\n\n'
+        msg.set_content(f'{div}'.join([job[2] + '\n\n' + self.shortener.short(job[0]) + '\n\n' + job[1] + '\n\n'
                                        for job in self.jobs]))  # job == (url, description, title)
         return msg
 
