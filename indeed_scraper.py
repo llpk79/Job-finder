@@ -83,7 +83,15 @@ class IndeedScraper(object):
     @staticmethod
     def num_user_input(prompt: str) -> int:
         """Prompts user with <prompt> and returns integer input."""
-        return int(input(prompt))
+        while True:
+            try:
+                num = int(input(prompt))
+                break
+            except ValueError:
+                print('Please enter a number.')
+                continue
+
+        return num
 
     @staticmethod
     def find_long_descriptions(soup) -> list:
