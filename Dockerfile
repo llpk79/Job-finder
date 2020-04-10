@@ -11,7 +11,7 @@ RUN apt-get update \
 
 # Copy app files.
 COPY requirements.txt /usr/src/
-COPY indeed_scraper.py /usr/src/
+COPY job_finder/job_finder.py /usr/src/
 COPY Resume.txt /usr/src/
 COPY .env /usr/src/
 
